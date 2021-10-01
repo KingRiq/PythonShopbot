@@ -3,6 +3,15 @@ import time
 import sqlite3
 from sqlite3 import Error
 from sqlite3.dbapi2 import Time, Timestamp
+import d
+
+"""def print_hi(name):
+    # Use a breakpoint in the code line below to debug your script.
+    print("Hi, {0}".format(name))  # Press ⌘F8 to toggle the breakpoint.
+if __name__ == '__main__':
+    print_hi('PyCharm')
+
+# See PyCharm help at https://www.jetbrains.com/help/pycharm/"""
 
 import sqlite3
 from sqlite3 import Error
@@ -11,7 +20,6 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import Select
 
 def sql_connection():
 
@@ -31,61 +39,14 @@ def sql_connection():
 
 
 def main():
-    print('Opening Browser')
-    driver = webdriver.Chrome(executable_path='~/bot/chromedriver')
+    driver = webdriver.Chrome(executable_path='/Users/riq/PycharmProjects/DDAutomation/chromedriver')
     mainwindow = driver.current_window_handle
-    driver.get("https://shop.telfar.net/collections/shopping-bags/products/small-copper-shopping-bag?variant=32627723436131")
-    print('adding to cart')
+    driver.get("https://shop.telfar.net/collections/t-shirts/products/telephone-long-sleeve-t-off-black")
     signup = driver.find_element_by_id('AddToCart')
     signup.click()
     time.sleep(1)
-    print('ready for checkout')
     driver.get("https://shop.telfar.net/cart")
-    global buy 
-    buy = driver.find_element_by_name('checkout')
-    buy.click()
-    print('enter your information yourself untilI improve the script')
-    print('jk Ill do it')
-    buy = driver.find_element_by_id('checkout_email')
-    buy.click()
-    buy.send_keys('sairaarain@hotmail.com')
-    
-    buy.send_keys(Keys.TAB*2)
-    buy = driver.switch_to.active_element
- 
-    buy.send_keys('Saira')
-    buy = buy.send_keys(Keys.TAB)
-    buy = driver.switch_to.active_element
-    buy.send_keys('Arain')
-    buy = buy.send_keys(Keys.TAB*2)
-    buy = driver.switch_to.active_element
-    buy.send_keys('106-700 ALLEGHENY DR')
-    buy.send_keys(Keys.TAB*2)
-    buy = driver.switch_to.active_element
-    buy.send_keys('Winnipeg')
-    buy.send_keys(Keys.TAB)
-    buy = driver.switch_to.active_element
-    buy.send_keys(Keys.DOWN)
-    drop = Select(buy)
-    drop.select_by_visible_text('Canada')
-    buy.send_keys(Keys.ENTER)
-    buy.send_keys(Keys.TAB)
-    buy = driver.switch_to.active_element
-    buy.send_keys(Keys.DOWN)
-    drop = Select(buy)
-    drop.select_by_visible_text('Manitoba')
-    buy.send_keys(Keys.ENTER)
-    buy.send_keys(Keys.TAB)
-    buy = driver.switch_to.active_element
-    buy.send_keys('R3T 4E4')
-    buy.send_keys(Keys.TAB)
-    buy = driver.switch_to.active_element
-    buy.send_keys('12043903822')
-    buy.send_keys(Keys.TAB*3)
-    buy = driver.switch_to.active_element
-    buy.send_keys(Keys.ENTER)
-
-'''
+    driver.refresh()
     firstname = driver.find_element_by_xpath('//*[@id="FieldWrapper-6"]')
     firstname.click()
     firstname.send_keys("Saira")
@@ -99,7 +60,6 @@ def main():
     passwords = driver.find_element_by_xpath('//*[@id="FieldWrapper-11"]')
     passwords.send_keys("1111111111")
     signup = driver.find_element_by_xpath('//*[@id="sign-up-submit-button"]/div/span/div')
-'''
 
 def email():
     #create email
@@ -134,5 +94,4 @@ def email():
     return driver
 
 driver = main()
-print('process complete!')
-#sql_connection()
+sql_connection()
