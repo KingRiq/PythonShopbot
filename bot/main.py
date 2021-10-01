@@ -3,41 +3,108 @@ import time
 import sqlite3
 from sqlite3 import Error
 from sqlite3.dbapi2 import Time, Timestamp
-
-import sqlite3
-from sqlite3 import Error
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
+import sched
+import time
+from datetime import datetime
+import os
 
-def sql_connection():
+global driver
+driver = webdriver.Chrome(executable_path='/Users/riq/PycharmProjects/DDAutomation/chromedriver')
 
-    try:
+#notify user of error becuase who knows what will happen
+def notify(title, text):
+    os.system("""
+              osascript -e 'display notification "{}" with title "{}"'
+              """.format(text, title))
 
-        con = sqlite3.connect("SairaUsernames.db")
+#sometimes mistakes happen and it can happen either during login or during checkout or something
+def checkvalid(string):
+    signup = driver.find_element_by_id(string)
+    p = True
+    timeout = 0
+    while p is True and timeout < 10:
+        try:
+            signup = driver.find_element_by_id(string)
+            if signup.is_enabled():
+                signup.click()
+                break
+            else:
+                from sys import exit
+                timeout +=1
+                if timeout >= 10:
+                    print("The item is definitely sold out")
+                    exit()
+                driver.refresh()
+        except Error:
+            #I predict we have reached a captcha here and want to check if an error is thrown
+            #if so then notify the user to do the captcha
+            notify("Error", "Something went wrong press enter on terminal when finished")
+            text = input("How? Sway")
+            notify("Now we are back on track", "Let's finish where we left off!")
+            driver.refresh()
 
-        print("Connection is established: To saira's database")
+#same procedure I just need to check if an element exists
+def checkvalid2(string):
+        try:
+            signup = driver.find_element_by_id(string)
+        except Error:
+            #I predict we have reached a captcha here and want to check if an error is thrown
+            #if so then notify the user to do the captcha
+            notify("Error", "Something went wrong press enter on terminal when finished")
+            text = input("How? Sway")
+            notify("Now we are back on track", "Let's finish where we left off!")
+            driver.refresh()
 
-    except Error:
+def login(username1, password1):
+    #ensure current window is right
+    mainwindow = driver.current_window_handle
+    
+    #now log in
+    driver.get("https://shop.telfar.net/account/login")
+    username = driver.find_element_by_id("CustomerEmail")
+    username.send_keys(username1)
+    password = driver.find_element_by_id("CustomerPassword")
+    password.send_keys(password1)
+    global signup
+    signup = driver.find_element_by_class_name("btn")
+    time.sleep(1)
+    signup.click() 
+    time.sleep(1)
+    name = driver.current_url
+    name1 = "https://shop.telfar.net/account"
 
-        print(Error)
+    if name == 'https://shop.telfar.net/account':
+        notify("Login Successful", "Were in boiz")
+    else:
+        notify("check for captcha", "I think a captcha is here press enter in terminal to continue")
+        input('press enter to continue')
+        notify("Now we are back on track", "Let's finish where we left off!")
+    schedule()
+    
+#schedule for the allotted time.
+def schedule():
+    scheduler = sched.scheduler(time.time, 
+    time.sleep)
 
-    finally:
+    # Schedule when you want the action to occur
+    t =time.strptime('Fri Oct 01 08:00:02 2021') #I will make this user friendly later!
+    t= time.mktime(t)
+    scheduler.enterabs(t, 0, main)
 
-        con.close()
-
+    #dont start until I say too!
+    scheduler.run() 
 
 def main():
-    print('Opening Browser')
-    driver = webdriver.Chrome(executable_path='~/bot/chromedriver')
-    mainwindow = driver.current_window_handle
-    driver.get("https://shop.telfar.net/collections/shopping-bags/products/small-copper-shopping-bag?variant=32627723436131")
+    driver.get("https://shop.telfar.net/collections/upcoming-drop/products/medium-bubblegum-pink-shopping-bag?variant=32457570975843")
     print('adding to cart')
-    signup = driver.find_element_by_id('AddToCart')
-    signup.click()
+    atc = 'AddToCart'
+    checkvalid(atc)
     time.sleep(1)
     print('ready for checkout')
     driver.get("https://shop.telfar.net/cart")
@@ -45,21 +112,30 @@ def main():
     buy = driver.find_element_by_name('checkout')
     buy.click()
     print('enter your information yourself untilI improve the script')
-    print('jk Ill do it')
-    buy = driver.find_element_by_id('checkout_email')
-    buy.click()
-    buy.send_keys('sairaarain@hotmail.com')
-    
-    buy.send_keys(Keys.TAB*2)
+    dropdown = 'checkout_shipping_address_id'
+    checkvalid2(dropdown)
+    buy = driver.find_element_by_id(dropdown)
+    buy.send_keys(Keys.UP)
     buy = driver.switch_to.active_element
- 
-    buy.send_keys('Saira')
+    drop = Select(buy)
+    drop.select_by_visible_text("106-700 ALLEGHENY DR, Winnipeg MB R3T 4E4, Canada (Saira Arain)")
+    buy = driver.find_element_by_id('continue_button')
+    notify("Almost done", "if the code fails just continue yourself to save time!")
+    buy.click()
+    time.sleep(1)
+    buy = driver.find_element_by_id('continue_button')
+    buy.click()
+    time.sleep(1)
+
+    #this was used before we made a static account this was used to register
+    '''
+    buy.send_keys('///')
     buy = buy.send_keys(Keys.TAB)
     buy = driver.switch_to.active_element
-    buy.send_keys('Arain')
+    buy.send_keys('///')
     buy = buy.send_keys(Keys.TAB*2)
     buy = driver.switch_to.active_element
-    buy.send_keys('106-700 ALLEGHENY DR')
+    buy.send_keys('///')
     buy.send_keys(Keys.TAB*2)
     buy = driver.switch_to.active_element
     buy.send_keys('Winnipeg')
@@ -77,13 +153,13 @@ def main():
     buy.send_keys(Keys.ENTER)
     buy.send_keys(Keys.TAB)
     buy = driver.switch_to.active_element
-    buy.send_keys('R3T 4E4')
+    buy.send_keys('///')
     buy.send_keys(Keys.TAB)
     buy = driver.switch_to.active_element
     buy.send_keys('12043903822')
     buy.send_keys(Keys.TAB*3)
     buy = driver.switch_to.active_element
-    buy.send_keys(Keys.ENTER)
+    buy.send_keys(Keys.ENTER)'''
 
 '''
     firstname = driver.find_element_by_xpath('//*[@id="FieldWrapper-6"]')
@@ -101,6 +177,7 @@ def main():
     signup = driver.find_element_by_xpath('//*[@id="sign-up-submit-button"]/div/span/div')
 '''
 
+#this is a function Ill never use for this purpose it was merely to check if I can make mass number of emails (protip I cant because of captcha v3 atm)
 def email():
     #create email
     driver = webdriver.Chrome(executable_path='/Users/riq/PycharmProjects/DDAutomation/chromedriver')
@@ -131,8 +208,19 @@ def email():
     input("Press enter when you are done with captcha")
     #driver.switch_to_window(mainwindow)
 
-    return driver
+    
 
-driver = main()
+notify("Hi", "Good mornin!")
+print("enter email")
+
+username = input()
+print("enter password")
+password = input()
+
+driver = login(username, password)
 print('process complete!')
+notify("Process Complete", "Complete")
 #sql_connection()
+
+
+#typically the website will generate a captcha at specific times although unpredictable I probably can figure out when one appears by checking if a captcha element is present.
