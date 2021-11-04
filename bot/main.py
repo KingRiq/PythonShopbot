@@ -11,11 +11,13 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 import sched
 import time
-from datetime import datetime
 import os
+import config_file
+from configparser import ConfigParser
+import configparser
 
 global driver
-driver = webdriver.Chrome(executable_path='/Users/riq/PycharmProjects/DDAutomation/chromedriver')
+driver = webdriver.Chrome('./chromedriver')
 
 #notify user of error becuase who knows what will happen
 def notify(title, text):
@@ -28,7 +30,7 @@ def checkvalid(string):
     signup = driver.find_element_by_id(string)
     p = True
     timeout = 0
-    while p is True and timeout < 10:
+    while p is True and timeout < 60:
         try:
             signup = driver.find_element_by_id(string)
             if signup.is_enabled():
@@ -76,16 +78,22 @@ def login(username1, password1):
     time.sleep(1)
     signup.click() 
     time.sleep(1)
+
+    #validate tht e are in the right place
     name = driver.current_url
     name1 = "https://shop.telfar.net/account"
 
     if name == 'https://shop.telfar.net/account':
         notify("Login Successful", "Were in boiz")
     else:
+        check_Captcha(name)
+    schedule()
+
+def check_Captcha(string) :
+    if string == 'https://shop.telfar.net/challenge':
         notify("check for captcha", "I think a captcha is here press enter in terminal to continue")
         input('press enter to continue')
         notify("Now we are back on track", "Let's finish where we left off!")
-    schedule()
     
 #schedule for the allotted time.
 def schedule():
@@ -93,7 +101,7 @@ def schedule():
     time.sleep)
 
     # Schedule when you want the action to occur
-    t =time.strptime('Fri Oct 01 08:00:02 2021') #I will make this user friendly later!
+    t =time.strptime('Fri Nov 04 07:59:55 2021') #I will make this user friendly later!
     t= time.mktime(t)
     scheduler.enterabs(t, 0, main)
 
@@ -101,24 +109,27 @@ def schedule():
     scheduler.run() 
 
 def main():
-    driver.get("https://shop.telfar.net/collections/upcoming-drop/products/medium-bubblegum-pink-shopping-bag?variant=32457570975843")
+    global buy 
+
+    # navigate to the item in question
+    driver.get("https://shop.telfar.net/collections/upcoming-drop/products/small-yellow-shopping-bag")
     print('adding to cart')
     atc = 'AddToCart'
     checkvalid(atc)
     time.sleep(1)
+
+    # Ready to checkout
     print('ready for checkout')
     driver.get("https://shop.telfar.net/cart")
-    global buy 
+    
+    
+    
     buy = driver.find_element_by_name('checkout')
     buy.click()
-    print('enter your information yourself untilI improve the script')
+    check_Captcha(driver.current_url)
+    print('enter your information yourself until I improve the script')
     dropdown = 'checkout_shipping_address_id'
     checkvalid2(dropdown)
-    buy = driver.find_element_by_id(dropdown)
-    buy.send_keys(Keys.UP)
-    buy = driver.switch_to.active_element
-    drop = Select(buy)
-    drop.select_by_visible_text("106-700 ALLEGHENY DR, Winnipeg MB R3T 4E4, Canada (Saira Arain)")
     buy = driver.find_element_by_id('continue_button')
     notify("Almost done", "if the code fails just continue yourself to save time!")
     buy.click()
@@ -210,12 +221,15 @@ def email():
 
     
 
-notify("Hi", "Good mornin!")
-print("enter email")
+notify("Hi", "Good morning!")
+if not os.path.exists('../../config'):
+    exit()
 
-username = input()
-print("enter password")
-password = input()
+file = '../../config/config.ini'
+config = ConfigParser()
+config.read(file)
+username = config.get('Account', 'username')
+password = config.get('Account', 'password')
 
 driver = login(username, password)
 print('process complete!')
