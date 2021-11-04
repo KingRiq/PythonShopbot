@@ -13,10 +13,14 @@ from configparser import ConfigParser
 import configparser
 import chromedriver_autoinstaller
 
-chromedriver_autoinstaller.install()
+# collect link from user (this is a design choice I rather have hardcoded)
+print("Post the link to the item you wish to purchase below!")
+link = input()
 
+chromedriver_autoinstaller.install()
 global driver
 driver = webdriver.Chrome()
+
 
 #notify user of error becuase who knows what will happen
 def notify(title, text):
@@ -145,9 +149,7 @@ def main():
     username = config.get('Account', 'username')
     password = config.get('Account', 'password')
 
-    # collect link from user (this is a design choice I rather have hardcoded)
-    print("Post the link to the item you wish to purchase below!")
-    link = input()
+    
 
     # init
     login(username, password)
