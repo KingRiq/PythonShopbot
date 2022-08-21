@@ -67,7 +67,7 @@ def login(username, password):
     username_field.send_keys(username)
     password_field = driver.find_element_by_id("CustomerPassword")
     password_field.send_keys(password)
-    signup = driver.find_element_by_class_name("btn")
+    signup = driver.find_element_by_xpath("//input[@class = 'btn']") #find_element_by_class_name('btn')
     time.sleep(1)
     signup.click() 
     time.sleep(1)
